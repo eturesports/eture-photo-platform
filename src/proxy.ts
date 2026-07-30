@@ -16,8 +16,24 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC = ["/login", "/denied", "/api/auth", "/api/inngest"];
 
+/** Without these nothing can work, so say so rather than throwing a 500. */
+const REQUIRED_ENV = [
+  "DATABASE_URL",
+  "R2_ACCOUNT_ID",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
+  "R2_BUCKET",
+  "AUTH_SECRET",
+];
+
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // A deployment without credentials answers every request with a stack trace
+  // otherwise, which tells whoever just deployed it nothing useful.
+  if (pathname !== "/setup" && REQUIRED_ENV.some((key) => !process.env[key])) {
+    return NextResponse.rewrite(new URL("/setup", request.url));
+  }
 
   if (PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();

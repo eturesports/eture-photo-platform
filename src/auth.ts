@@ -27,7 +27,16 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+/**
+ * The config is built per request, not at import.
+ *
+ * `DrizzleAdapter(db)` inspects the database handle to work out its dialect,
+ * which connects — so building the config at module load makes merely
+ * importing this file fail on a deployment that has no DATABASE_URL yet. That
+ * turns the "you still need to configure me" page into a 500, which is the one
+ * page that must survive being unconfigured.
+ */
+export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   adapter: DrizzleAdapter(db, {
     usersTable: appUser,
     accountsTable: account,
@@ -103,4 +112,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+}));

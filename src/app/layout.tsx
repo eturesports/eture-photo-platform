@@ -21,7 +21,11 @@ const nav = [
 ];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+  // The layout wraps every page, including /setup — which exists precisely for
+  // deployments that have no database yet. Reading the session must therefore
+  // be allowed to fail: an unconfigured deployment should explain itself, not
+  // answer with a stack trace.
+  const session = await auth().catch(() => null);
   const role = session?.user?.role;
 
   return (
