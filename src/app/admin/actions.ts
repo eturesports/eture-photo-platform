@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { session, squad } from "@/db/schema";
 import { importPeople, parseCsv } from "@/lib/people";
 import { DEFAULT_TIMEZONE, wallClockToInstant } from "@/lib/time";
+import { requireRole } from "@/lib/access";
 
 const SquadInput = z.object({
   name: z.string().min(1).max(120),
@@ -16,6 +17,8 @@ const SquadInput = z.object({
 });
 
 export async function createSquad(formData: FormData) {
+  await requireRole("team");
+
   const parsed = SquadInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "datos incompletos" };
 
@@ -36,6 +39,8 @@ const SessionInput = z.object({
 });
 
 export async function createSession(formData: FormData) {
+  await requireRole("team");
+
   const parsed = SessionInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "datos incompletos" };
   const input = parsed.data;
@@ -74,6 +79,8 @@ type ImportOutcome =
     };
 
 export async function importRoster(formData: FormData): Promise<ImportOutcome> {
+  await requireRole("team");
+
   const file = formData.get("csv");
   const squadId = (formData.get("squadId") as string) || null;
 

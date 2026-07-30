@@ -2,10 +2,14 @@ import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { photo, session, squad } from "@/db/schema";
 import { Card, Empty, PageHeader, kindLabel } from "@/components/ui";
+import { requireRole } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function SessionsPage() {
+  // A whole session is other people's children; team only.
+  await requireRole("team");
+
   const rows = await db
     .select({
       id: session.id,

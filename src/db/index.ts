@@ -33,6 +33,11 @@ export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
     const value = connect()[key as keyof PostgresJsDatabase<typeof schema>];
     return typeof value === "function" ? value.bind(connect()) : value;
   },
+  // Drizzle's `is()` — which the Auth.js adapter uses to work out the dialect —
+  // walks the prototype chain looking for a brand on the constructor. Without
+  // this trap it sees a bare object and refuses to build the adapter.
+  getPrototypeOf: () => Object.getPrototypeOf(connect()),
+  has: (_target, key) => key in connect(),
 });
 
 export { schema };

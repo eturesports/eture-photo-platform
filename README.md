@@ -8,8 +8,8 @@ jugadores y entrenadores que aparecen en ella.
 - **Infraestructura** — Vercel · Neon (Fráncfort) · Cloudflare R2 · Inngest · AWS Rekognition (Irlanda)
 - **Sin servidores** que administrar: todo son servicios gestionados
 
-> ⚠️ **Todavía no tiene autenticación.** Ver "Lo que falta" antes de desplegarlo
-> con datos reales.
+Acceso **sólo por invitación**, con enlace mágico por correo. Tres niveles:
+equipo, fotógrafo (sube, no ve galerías) y familia (sólo sus hijos).
 
 ---
 
@@ -18,10 +18,20 @@ jugadores y entrenadores que aparecen en ella.
 ```bash
 npm install
 cp .env.example .env.local     # y rellenar
+npx auth secret                # genera AUTH_SECRET
 npm run db:migrate             # crea el esquema, incluida la extensión pgvector
 npm run dev                    # http://localhost:3000
 npm test                       # lógica de decisión y zonas horarias
 ```
+
+**La primera cuenta hay que crearla a mano**, porque no existe registro:
+
+```sql
+insert into app_user (email, name, role)
+values ('tu@eturesports.com', 'Tu nombre', 'team');
+```
+
+Desde ahí, el resto se crean en Administración.
 
 Para procesar fotos en local hace falta también el runner de Inngest, en otra
 terminal:
@@ -71,6 +81,36 @@ cola de revisión, ese recorte se guarda como referencia. Con entrenamientos
 semanales — las mismas 25 personas, el mismo campo, la misma luz — el sistema
 converge en pocas sesiones. Sólo se indexan recortes confirmados por una
 persona: realimentar los automáticos dejaría que un error se reforzara solo.
+
+---
+
+## Acceso
+
+Sin contraseñas y sin registro. Se pide un enlace por correo, caduca a los 15
+minutos y sirve una vez.
+
+**Una dirección que no tenga cuenta no recibe enlace.** Es la diferencia entre
+un sistema por invitación y una puerta abierta, y aquí hay fotografías de
+menores. Dejado por defecto, un proveedor de enlaces mágicos crea la cuenta a
+quien la pida.
+
+| Rol | Ve |
+| --- | --- |
+| `team` | Todo: subida, revisión, sesiones, personas, administración |
+| `photographer` | Sólo la pantalla de subida. Nunca galerías ajenas |
+| `family` | Sólo los jugadores vinculados a su cuenta |
+
+Las sesiones se guardan en base de datos, no en un token firmado, para que
+**desactivar una cuenta corte el acceso en la petición siguiente** — no cuando
+caduque una cookie treinta días después. Al desactivar se destruyen además
+todas sus sesiones abiertas.
+
+Se desactiva, no se borra: borrar la fila vaciaría de sentido el registro de
+accesos, que es justo lo que responde a "quién ha visto las fotos de mi hijo".
+
+Cada capa comprueba por su cuenta — el proxy, la página y la acción de
+servidor. Las acciones de servidor y las rutas de API son puntos de entrada
+públicos: que la página que las invoca esté protegida no las protege a ellas.
 
 ---
 
@@ -148,20 +188,16 @@ económico: a 4.000 fotos por sesión, el almacenamiento a cinco años pasa de
 
 Por orden de urgencia:
 
-1. **Autenticación.** No hay ninguna. Es lo siguiente y es bloqueante: no puede
-   desplegarse con datos reales sin ella. El plan es Auth.js con enlaces
-   mágicos sobre la cuenta de Resend que ya existe, con tres niveles — equipo,
-   fotógrafo (sube, no ve galerías ajenas) y familia (sólo su jugador).
-2. **Calibrar los umbrales** de `lib/matching.ts` contra unas 300 fotos
+1. **Calibrar los umbrales** de `lib/matching.ts` contra unas 300 fotos
    etiquetadas a mano antes de abrir el archivo a las familias. Los valores
    actuales son un punto de partida razonado, no medido.
-3. **Alta con retratos**: la pantalla para fotografiar a cada persona el día de
+2. **Alta con retratos**: la pantalla para fotografiar a cada persona el día de
    la acreditación. Veinte minutos por temporada y es lo que hace que el
    reconocimiento funcione desde el primer día.
-4. **Acceso de familias**: enlace externo, descarga de galería en ZIP.
-5. **Corrección de lote** cuando la cámara tenía el reloj mal puesto: aplicar un
+3. **Descarga de galería en ZIP** para las familias.
+4. **Corrección de lote** cuando la cámara tenía el reloj mal puesto: aplicar un
    desfase a toda una subida en vez de foto a foto.
-6. **Gestión de consentimientos** desde la interfaz, incluida la revocación con
+5. **Gestión de consentimientos** desde la interfaz, incluida la revocación con
    borrado de vectores.
 
 Nota menor: `importPeople` captura los errores por fila, así que una caída de

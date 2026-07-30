@@ -2,10 +2,13 @@ import { asc, count, eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { appearance, person } from "@/db/schema";
 import { Card, Empty, PageHeader, RoleBadge } from "@/components/ui";
+import { requireRole } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function PeoplePage() {
+  await requireRole("team");
+
   const rows = await db
     .select({
       id: person.id,

@@ -17,6 +17,7 @@
 import {
   bigint,
   boolean,
+  integer,
   date,
   index,
   jsonb,
@@ -234,6 +235,90 @@ export const faceRef = pgTable(
     index("face_ref_person_idx").on(t.personId),
     index("face_ref_vector_idx").using("hnsw", t.embedding.op("vector_cosine_ops")),
   ],
+);
+
+// ---------------------------------------------------------------------------
+// Accounts.
+//
+// Sign-in is by emailed magic link, and there is NO self-registration: an
+// address that is not already in `appUser` cannot get a link, whatever it
+// asks for. That is the difference between an invitation system and an open
+// door, and this archive holds photographs of minors.
+// ---------------------------------------------------------------------------
+
+/**
+ * 'team'         — everything, including review and admin
+ * 'photographer' — uploads only; never sees anyone else's galleries
+ * 'family'       — only the people linked to them in `guardianOf`
+ */
+export const appUser = pgTable("app_user", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  emailVerified: timestamp("email_verified", { withTimezone: true }),
+  image: text("image"),
+  role: text("role").notNull().default("family"),
+  disabledAt: timestamp("disabled_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Which people a family account may see. A parent can have two children here. */
+export const guardianOf = pgTable(
+  "guardian_of",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => appUser.id, { onDelete: "cascade" }),
+    personId: uuid("person_id")
+      .notNull()
+      .references(() => person.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.personId] })],
+);
+
+/** Auth.js session storage. Database sessions, so revoking access is immediate. */
+export const authSession = pgTable("auth_session", {
+  sessionToken: text("session_token").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => appUser.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { withTimezone: true }).notNull(),
+});
+
+/** Auth.js one-time magic-link tokens. */
+export const verificationToken = pgTable(
+  "verification_token",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+);
+
+/**
+ * Auth.js OAuth accounts. Unused today — sign-in is email-only — but the
+ * adapter requires the table, and it is where a Google login would land if
+ * the team ever wants one.
+ */
+export const account = pgTable(
+  "account",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => appUser.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (t) => [primaryKey({ columns: [t.provider, t.providerAccountId] })],
 );
 
 /** Who viewed or downloaded what. The first thing asked for in a complaint. */

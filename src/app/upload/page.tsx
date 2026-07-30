@@ -2,11 +2,15 @@ import { isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { photo } from "@/db/schema";
 import { PageHeader } from "@/components/ui";
+import { requireRole } from "@/lib/access";
 import { Uploader } from "./Uploader";
 
 export const dynamic = "force-dynamic";
 
 export default async function UploadPage() {
+  // Photographers upload; that is the whole of their access.
+  await requireRole("team", "photographer");
+
   const rows = await db
     .selectDistinct({ photographer: photo.photographer })
     .from(photo)

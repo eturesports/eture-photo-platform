@@ -9,6 +9,7 @@ import { recognitionEnabled } from "@/lib/env";
 import { indexFace } from "@/lib/recognition";
 import { hammingDistance } from "@/lib/images";
 import sharp from "sharp";
+import { requireRole } from "@/lib/access";
 
 /** Reference faces kept per person. Past this, more adds noise, not accuracy. */
 const MAX_REFERENCE_FACES = 20;
@@ -26,6 +27,9 @@ const MAX_REFERENCE_FACES = 20;
  * in would let a single mistake reinforce itself.
  */
 export async function confirmAppearance(appearanceId: string, personId: string, reviewer: string) {
+  // Server actions are public endpoints. Every one of them checks.
+  await requireRole("team");
+
   const [row] = await db
     .select()
     .from(appearance)
@@ -51,6 +55,8 @@ export async function confirmAppearance(appearanceId: string, personId: string, 
 }
 
 export async function rejectAppearance(appearanceId: string, reviewer: string) {
+  await requireRole("team");
+
   await db
     .update(appearance)
     .set({ state: "rejected", source: "human", reviewedBy: reviewer, reviewedAt: new Date() })
@@ -67,6 +73,8 @@ export async function rejectAppearance(appearanceId: string, reviewer: string) {
  * This is most of why a reviewer can clear 400-600 faces an hour instead of 60.
  */
 export async function confirmBurst(appearanceId: string, personId: string, reviewer: string) {
+  await requireRole("team");
+
   const [row] = await db
     .select({ photoId: appearance.photoId })
     .from(appearance)

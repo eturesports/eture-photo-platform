@@ -8,10 +8,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { inngest } from "@/inngest/client";
+import { requireApiRole } from "@/lib/access";
 
 const Body = z.object({ photoIds: z.array(z.string().uuid()).min(1).max(500) });
 
 export async function POST(request: Request) {
+  const denied = await requireApiRole("team", "photographer");
+  if (denied) return denied;
+
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues }, { status: 400 });

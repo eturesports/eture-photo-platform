@@ -14,6 +14,7 @@
     "test": "tsx tests/matching.test.mts && node tests/time.test.mjs"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.11.3",
     "@aws-sdk/client-rekognition": "^3.1098.0",
     "@aws-sdk/client-s3": "^3.732.0",
     "@aws-sdk/s3-request-presigner": "^3.732.0",
@@ -21,9 +22,11 @@
     "exifr": "^7.1.3",
     "inngest": "^3.29.0",
     "next": "16.2.12",
+    "next-auth": "^5.0.0-beta.32",
     "postgres": "^3.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "resend": "^6.18.1",
     "sharp": "^0.35.3",
     "zod": "^3.24.1"
   },

@@ -13,6 +13,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { photo } from "@/db/schema";
 import { keys, presignUpload } from "@/lib/storage";
+import { requireApiRole } from "@/lib/access";
 
 const Body = z.object({
   filename: z.string().min(1).max(255),
@@ -24,6 +25,10 @@ const Body = z.object({
 });
 
 export async function POST(request: Request) {
+  // An API route is not protected by whatever guards the page that calls it.
+  const denied = await requireApiRole("team", "photographer");
+  if (denied) return denied;
+
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues }, { status: 400 });

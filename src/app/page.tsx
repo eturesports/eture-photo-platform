@@ -1,31 +1,90 @@
-import { count, eq, sql } from "drizzle-orm";
+import { count, eq, inArray, sql } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { person, photo, session } from "@/db/schema";
-import { Card, PageHeader, Stat } from "@/components/ui";
+import { appearance, person, photo, session } from "@/db/schema";
+import { Card, Empty, PageHeader, Stat } from "@/components/ui";
+import { requireViewer, visiblePersonIds } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  const [[photos], [people], [sessions], [unassigned], [failed]] = await Promise.all([
+  const viewer = await requireViewer();
+
+  if (viewer.role === "family") return <FamilyHome userId={viewer.id} />;
+  // Photographers get one job and one screen.
+  if (viewer.role === "photographer") redirect("/upload");
+  return <TeamDashboard />;
+}
+
+/** Families land on their own children, never on a list of everyone else's. */
+async function FamilyHome({ userId }: { userId: string }) {
+  const ids = await visiblePersonIds({ id: userId, email: "", role: "family" });
+
+  if (ids.length === 0) {
+    return (
+      <>
+        <PageHeader title="Tus fotos" />
+        <Empty>
+          Tu cuenta aún no está vinculada a ningún jugador. Escríbenos a
+          hello@eturesports.com y lo resolvemos.
+        </Empty>
+      </>
+    );
+  }
+
+  const people = await db
+    .select({
+      slug: person.slug,
+      fullName: person.fullName,
+      photos: count(appearance.id),
+    })
+    .from(person)
+    .leftJoin(appearance, eq(appearance.personId, person.id))
+    .where(inArray(person.id, ids))
+    .groupBy(person.id);
+
+  return (
+    <>
+      <PageHeader
+        title="Tus fotos"
+        lead="Las fotografías de entrenamientos y partidos de esta temporada."
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        {people.map((p) => (
+          <Card
+            key={p.slug}
+            href={`/person/${p.slug}`}
+            title={p.fullName}
+            meta={`${p.photos} fotos`}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+async function TeamDashboard() {
+  const [[photos], [people], [sessions], [unassigned], [failed], [queued]] = await Promise.all([
     db.select({ n: count() }).from(photo),
     db.select({ n: count() }).from(person),
     db.select({ n: count() }).from(session),
     db.select({ n: count() }).from(photo).where(sql`${photo.sessionId} is null`),
     db.select({ n: count() }).from(photo).where(eq(photo.status, "failed")),
+    db.select({ n: count() }).from(appearance).where(eq(appearance.state, "review")),
   ]);
 
   return (
     <>
       <PageHeader
         title="Panel"
-        lead="Fase 1 del archivo: subida, sesiones y perfiles. El reconocimiento facial llega en la Fase 2, cuando esté configurada la cuenta de AWS."
+        lead="Archivo de entrenamientos y partidos, por jugador y entrenador."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Fotos archivadas" value={photos.n} />
         <Stat label="Personas" value={people.n} />
         <Stat label="Sesiones" value={sessions.n} />
-        <Stat label="Sin sesión asignada" value={unassigned.n} />
+        <Stat label="Pendientes de revisar" value={queued.n} />
       </div>
 
       {failed.n > 0 && (
@@ -41,14 +100,15 @@ export default async function Dashboard() {
         </div>
       )}
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <Card href="/upload" title="Subir fotos" meta="→">
-          La selección editada de un entrenamiento o partido. Los duplicados se detectan
-          antes de subirse.
+          La selección editada de una sesión. Los duplicados se detectan antes de subirse.
         </Card>
-        <Card href="/sessions" title="Sesiones" meta="→">
-          El calendario de entrenamientos y partidos. Cada foto se asigna sola por su
-          fecha de captura.
+        <Card href="/review" title="Revisar" meta={`${queued.n}`}>
+          Cada confirmación enseña al sistema a reconocer a esa persona.
+        </Card>
+        <Card href="/sessions" title="Sesiones" meta={`${unassigned.n} sin asignar`}>
+          Entrenamientos y partidos. Las fotos se asignan por su hora de captura.
         </Card>
       </div>
     </>

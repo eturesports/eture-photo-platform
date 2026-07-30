@@ -4,10 +4,12 @@ import { db } from "@/db";
 import { photo, session, squad } from "@/db/schema";
 import { Empty, PageHeader, kindLabel } from "@/components/ui";
 import { presignDownload } from "@/lib/storage";
+import { requireRole } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole("team");
   const { id } = await params;
 
   const [found] = await db

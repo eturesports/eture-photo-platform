@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui";
 import { presignDownload } from "@/lib/storage";
 import { kindLabel } from "@/components/ui";
 import { ReviewQueue, type QueueItem } from "./ReviewQueue";
+import { requireRole } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,8 @@ export const dynamic = "force-dynamic";
 const BATCH = 40;
 
 export default async function ReviewPage() {
+  const viewer = await requireRole("team");
+
   const queued = await db
     .select({
       appearanceId: appearance.id,
@@ -75,7 +78,7 @@ export default async function ReviewPage() {
         title="Revisión"
         lead="Cada confirmación se guarda como cara de referencia, así que el sistema aprende a esa persona con la luz y el ángulo de esta temporada. Tras unas pocas sesiones, esta cola casi se vacía sola."
       />
-      <ReviewQueue items={items} reviewer="equipo" />
+      <ReviewQueue items={items} reviewer={viewer.email} />
     </>
   );
 }
