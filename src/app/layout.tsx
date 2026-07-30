@@ -27,10 +27,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="es">
       <body className="min-h-screen">
-        <header className="sticky top-0 z-10 border-b border-[--color-line] bg-white/85 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b border-line bg-white/85 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-4">
             <Link href="/" className="font-semibold tracking-tight">
-              Eture <span className="text-[--color-brand]">Archivo</span>
+              Eture <span className="text-brand">Archivo</span>
             </Link>
 
             {role && (
@@ -41,7 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-[--radius-eture] px-3 py-1.5 text-[--color-muted] transition-colors hover:bg-[--color-surface] hover:text-[--color-ink]"
+                      className="rounded-eture px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
                     >
                       {item.label}
                     </Link>
@@ -57,8 +57,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 }}
                 className="ml-auto flex items-center gap-3 text-sm"
               >
-                <span className="text-[--color-muted]">{session.user.email}</span>
-                <button className="rounded-[--radius-eture] px-3 py-1.5 text-[--color-muted] transition-colors hover:bg-[--color-surface] hover:text-[--color-ink]">
+                <span className="text-muted">{session.user.email}</span>
+                <button className="rounded-eture px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink">
                   Salir
                 </button>
               </form>

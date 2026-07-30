@@ -33,9 +33,9 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
 
   if (!item) {
     return (
-      <div className="rounded-[--radius-eture] border border-dashed border-[--color-line] p-12 text-center">
+      <div className="rounded-eture border border-dashed border-line p-12 text-center">
         <p className="font-medium">Cola vacía</p>
-        <p className="mt-1 text-sm text-[--color-muted]">
+        <p className="mt-1 text-sm text-muted">
           No queda nada por revisar. Vuelve después de la próxima subida.
         </p>
       </div>
@@ -72,7 +72,7 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
       }}
       className="outline-none"
     >
-      <div className="mb-4 flex items-center justify-between text-sm text-[--color-muted]">
+      <div className="mb-4 flex items-center justify-between text-sm text-muted">
         <span>
           {index + 1} de {items.length} · {item.sessionLabel}
         </span>
@@ -80,14 +80,14 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
       </div>
 
       <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-        <div className="relative overflow-hidden rounded-[--radius-eture] bg-[--color-surface]">
+        <div className="relative overflow-hidden rounded-eture bg-surface">
           {item.photoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.photoUrl} alt="" className="w-full" />
           )}
           {/* The face in question, marked on the full frame for context. */}
           <div
-            className="pointer-events-none absolute border-2 border-[--color-brand]"
+            className="pointer-events-none absolute border-2 border-brand"
             style={{
               left: `${item.bbox.x * 100}%`,
               top: `${item.bbox.y * 100}%`,
@@ -103,13 +103,13 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
               key={c.personId}
               disabled={pending}
               onClick={() => act(() => confirmAppearance(item.appearanceId, c.personId, reviewer))}
-              className="flex w-full items-center justify-between rounded-[--radius-eture] border border-[--color-line] px-4 py-3 text-left transition-colors hover:border-[--color-brand] disabled:opacity-40"
+              className="flex w-full items-center justify-between rounded-eture border border-line px-4 py-3 text-left transition-colors hover:border-brand disabled:opacity-40"
             >
               <span>
-                <span className="mr-2 text-xs text-[--color-muted]">{i + 1}</span>
+                <span className="mr-2 text-xs text-muted">{i + 1}</span>
                 {c.fullName}
               </span>
-              <span className="text-sm tabular-nums text-[--color-muted]">
+              <span className="text-sm tabular-nums text-muted">
                 {c.score.toFixed(0)}%
               </span>
             </button>
@@ -120,7 +120,7 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
             onClick={() =>
               act(() => confirmBurst(item.appearanceId, item.candidates[0].personId, reviewer))
             }
-            className="w-full rounded-[--radius-eture] bg-[--color-brand] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[--color-brand-ink] disabled:opacity-40"
+            className="w-full rounded-eture bg-brand px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-ink disabled:opacity-40"
           >
             Confirmar toda la ráfaga <span className="opacity-60">B</span>
           </button>
@@ -128,7 +128,7 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
           <button
             disabled={pending}
             onClick={() => act(() => rejectAppearance(item.appearanceId, reviewer))}
-            className="w-full rounded-[--radius-eture] border border-[--color-line] px-4 py-3 text-sm transition-colors hover:border-[--color-muted] disabled:opacity-40"
+            className="w-full rounded-eture border border-line px-4 py-3 text-sm transition-colors hover:border-muted disabled:opacity-40"
           >
             No es ninguno <span className="opacity-60">X</span>
           </button>
@@ -136,16 +136,16 @@ export function ReviewQueue({ items, reviewer }: { items: QueueItem[]; reviewer:
           <button
             disabled={pending}
             onClick={advance}
-            className="w-full px-4 py-2 text-sm text-[--color-muted] hover:text-[--color-ink]"
+            className="w-full px-4 py-2 text-sm text-muted hover:text-ink"
           >
             Saltar <span className="opacity-60">→</span>
           </button>
 
-          {note && <p className="pt-2 text-sm text-[--color-brand]">{note}</p>}
+          {note && <p className="pt-2 text-sm text-brand">{note}</p>}
         </div>
       </div>
 
-      <p className="mt-6 text-xs text-[--color-muted]">
+      <p className="mt-6 text-xs text-muted">
         Atajos: 1-3 asignar · B confirmar la ráfaga entera · X descartar · → saltar
       </p>
     </div>

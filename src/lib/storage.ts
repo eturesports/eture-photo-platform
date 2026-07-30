@@ -24,7 +24,15 @@ function client(): S3Client {
   if (!cached) {
     cached = new S3Client({
       region: "auto",
-      endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      // R2 by default. The override exists for two real cases: running the
+      // whole pipeline locally without cloud credentials (`npm run dev:s3`),
+      // and moving to another S3-compatible provider — which the data
+      // protection review may yet require if US-owned processors are ruled
+      // out for biometric data.
+      endpoint:
+        process.env.R2_ENDPOINT ??
+        `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      forcePathStyle: Boolean(process.env.R2_ENDPOINT),
       credentials: {
         accessKeyId: env.R2_ACCESS_KEY_ID,
         secretAccessKey: env.R2_SECRET_ACCESS_KEY,

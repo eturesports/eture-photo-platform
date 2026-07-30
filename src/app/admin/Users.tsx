@@ -13,7 +13,7 @@ type User = {
 };
 
 const field =
-  "mt-1.5 w-full rounded-[--radius-eture] border border-[--color-line] px-4 py-2.5 outline-none focus:border-[--color-brand]";
+  "mt-1.5 w-full rounded-eture border border-line px-4 py-2.5 outline-none focus:border-brand";
 const label = "block text-sm font-medium";
 
 const roleLabel: Record<string, string> = {
@@ -27,31 +27,31 @@ export function Users({ users }: { users: User[] }) {
   const [role, setRole] = useState("family");
 
   return (
-    <section className="rounded-[--radius-eture] border border-[--color-line] p-6">
+    <section className="rounded-eture border border-line p-6">
       <h2 className="font-medium">Cuentas</h2>
-      <p className="mt-1 text-sm text-[--color-muted]">
+      <p className="mt-1 text-sm text-muted">
         El acceso es sólo por invitación: una dirección que no esté aquí no recibe enlace,
         por mucho que lo pida.
       </p>
 
       {message && (
-        <p className="mt-4 rounded-[--radius-eture] bg-[--color-surface] p-4 text-sm">
+        <p className="mt-4 rounded-eture bg-surface p-4 text-sm">
           {message}
         </p>
       )}
 
       {users.length > 0 && (
-        <ul className="mt-5 divide-y divide-[--color-line] text-sm">
+        <ul className="mt-5 divide-y divide-line text-sm">
           {users.map((u) => (
             <li key={u.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
-              <span className={u.disabled ? "text-[--color-muted] line-through" : ""}>
+              <span className={u.disabled ? "text-muted line-through" : ""}>
                 {u.email}
               </span>
-              <span className="rounded-[--radius-eture] bg-[--color-surface] px-2.5 py-0.5 text-xs text-[--color-muted]">
+              <span className="rounded-eture bg-surface px-2.5 py-0.5 text-xs text-muted">
                 {roleLabel[u.role] ?? u.role}
               </span>
               {u.linkedTo && (
-                <span className="text-xs text-[--color-muted]">ve a {u.linkedTo}</span>
+                <span className="text-xs text-muted">ve a {u.linkedTo}</span>
               )}
               <form
                 action={async (fd) => {
@@ -61,7 +61,7 @@ export function Users({ users }: { users: User[] }) {
               >
                 <input type="hidden" name="userId" value={u.id} />
                 <input type="hidden" name="disabled" value={String(!u.disabled)} />
-                <button className="text-xs text-[--color-muted] underline hover:text-[--color-ink]">
+                <button className="text-xs text-muted underline hover:text-ink">
                   {u.disabled ? "Reactivar" : "Desactivar"}
                 </button>
               </form>
@@ -107,13 +107,13 @@ export function Users({ users }: { users: User[] }) {
               className={field}
               required
             />
-            <span className="mt-1 block text-xs font-normal text-[--color-muted]">
+            <span className="mt-1 block text-xs font-normal text-muted">
               El identificador que aparece en la dirección de su perfil.
             </span>
           </label>
         )}
         <div className="sm:col-span-2">
-          <button className="rounded-[--radius-eture] bg-[--color-brand] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[--color-brand-ink]">
+          <button className="rounded-eture bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-ink">
             Crear cuenta
           </button>
         </div>

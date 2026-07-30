@@ -88,12 +88,12 @@ async function TeamDashboard() {
       </div>
 
       {failed.n > 0 && (
-        <div className="mt-6 rounded-[--radius-eture] border border-[--color-brand] bg-white p-6">
-          <p className="font-medium text-[--color-brand]">
+        <div className="mt-6 rounded-eture border border-brand bg-white p-6">
+          <p className="font-medium text-brand">
             {failed.n} {failed.n === 1 ? "foto ha fallado" : "fotos han fallado"} al
             procesarse
           </p>
-          <p className="mt-1 text-sm text-[--color-muted]">
+          <p className="mt-1 text-sm text-muted">
             Suelen ser archivos corruptos o formatos que sharp no reconoce. El motivo
             queda guardado en cada foto.
           </p>

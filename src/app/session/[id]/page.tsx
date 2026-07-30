@@ -52,7 +52,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       />
 
       {found.kind === "match" && !found.numbersVisible && (
-        <p className="mb-6 rounded-[--radius-eture] bg-[--color-surface] p-4 text-sm text-[--color-muted]">
+        <p className="mb-6 rounded-eture bg-surface p-4 text-sm text-muted">
           Esta sesión es un partido pero no está marcada con equipación numerada, así que
           no se leerán dorsales. Márcala si los jugadores llevaban número.
         </p>
@@ -65,7 +65,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
           {withUrls.map((p) => (
             <div
               key={p.id}
-              className="aspect-square overflow-hidden rounded-[--radius-eture] bg-[--color-surface]"
+              className="aspect-square overflow-hidden rounded-eture bg-surface"
             >
               {p.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -76,7 +76,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-xs text-[--color-muted]">
+                <div className="flex h-full items-center justify-center text-xs text-muted">
                   {p.status === "failed" ? "error" : "procesando"}
                 </div>
               )}

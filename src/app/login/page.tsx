@@ -12,12 +12,12 @@ export default async function LoginPage({
   return (
     <div className="mx-auto max-w-md py-16">
       <h1 className="text-3xl font-semibold tracking-tight">Archivo fotográfico</h1>
-      <p className="mt-3 text-[--color-muted]">
+      <p className="mt-3 text-muted">
         Escribe tu correo y te enviamos un enlace de acceso. No hace falta contraseña.
       </p>
 
       {error && (
-        <p className="mt-6 rounded-[--radius-eture] border border-[--color-brand] p-4 text-sm text-[--color-brand]">
+        <p className="mt-6 rounded-eture border border-brand p-4 text-sm text-brand">
           No hemos podido iniciar sesión con ese correo. El acceso es sólo por invitación:
           si crees que deberías tenerlo, escribe a hello@eturesports.com.
         </p>
@@ -41,16 +41,16 @@ export default async function LoginPage({
             required
             autoComplete="email"
             placeholder="tu@correo.com"
-            className="mt-1.5 w-full rounded-[--radius-eture] border border-[--color-line] px-4 py-2.5 outline-none focus:border-[--color-brand]"
+            className="mt-1.5 w-full rounded-eture border border-line px-4 py-2.5 outline-none focus:border-brand"
           />
         </label>
 
-        <button className="w-full rounded-[--radius-eture] bg-[--color-brand] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[--color-brand-ink]">
+        <button className="w-full rounded-eture bg-brand px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-ink">
           Enviarme el enlace
         </button>
       </form>
 
-      <p className="mt-8 text-xs text-[--color-muted]">
+      <p className="mt-8 text-xs text-muted">
         El enlace caduca a los 15 minutos y sólo sirve una vez.
       </p>
     </div>

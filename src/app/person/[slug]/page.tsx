@@ -54,7 +54,7 @@ export default async function PersonPage({
       {viewer.role === "team" && (
         <div className="mb-8 flex items-center gap-3">
           <RoleBadge role={found.role} />
-          <span className="text-sm text-[--color-muted]">
+          <span className="text-sm text-muted">
             {indexed
               ? "Con consentimiento biométrico: se le reconoce automáticamente."
               : "Sin consentimiento biométrico: sus fotos se asignan a mano."}
@@ -73,7 +73,7 @@ export default async function PersonPage({
           {withUrls.map((p) => (
             <div
               key={p.id}
-              className="aspect-square overflow-hidden rounded-[--radius-eture] bg-[--color-surface]"
+              className="aspect-square overflow-hidden rounded-eture bg-surface"
             >
               {p.url && (
                 // eslint-disable-next-line @next/next/no-img-element

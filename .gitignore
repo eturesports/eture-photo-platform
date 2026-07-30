@@ -12,3 +12,5 @@ build
 .vercel
 next-env.d.ts
 *.tsbuildinfo
+
+.s3-data

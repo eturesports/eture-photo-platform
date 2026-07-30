@@ -122,7 +122,7 @@ export function Uploader({ photographers }: { photographers: string[] }) {
           value={photographer}
           onChange={(e) => setPhotographer(e.target.value)}
           placeholder="Nombre de quien ha disparado"
-          className="mt-1.5 w-full max-w-sm rounded-[--radius-eture] border border-[--color-line] px-4 py-2.5 outline-none focus:border-[--color-brand]"
+          className="mt-1.5 w-full max-w-sm rounded-eture border border-line px-4 py-2.5 outline-none focus:border-brand"
         />
       </label>
 
@@ -132,19 +132,19 @@ export function Uploader({ photographers }: { photographers: string[] }) {
           e.preventDefault();
           if (!running) run(Array.from(e.dataTransfer.files));
         }}
-        className="rounded-[--radius-eture] border border-dashed border-[--color-line] bg-[--color-surface] p-12 text-center"
+        className="rounded-eture border border-dashed border-line bg-surface p-12 text-center"
       >
-        <p className="text-[--color-muted]">
+        <p className="text-muted">
           Arrastra aquí la carpeta con la selección de la sesión
         </p>
-        <p className="mt-1 text-sm text-[--color-muted]">
+        <p className="mt-1 text-sm text-muted">
           Entre 100 y 200 fotos ya editadas. Los duplicados se descartan sin subirse.
         </p>
         <button
           type="button"
           disabled={running || !photographer.trim()}
           onClick={() => inputRef.current?.click()}
-          className="mt-5 rounded-[--radius-eture] bg-[--color-brand] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[--color-brand-ink] disabled:opacity-40"
+          className="mt-5 rounded-eture bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-ink disabled:opacity-40"
         >
           {running ? "Subiendo…" : "Elegir archivos"}
         </button>
@@ -159,25 +159,25 @@ export function Uploader({ photographers }: { photographers: string[] }) {
       </div>
 
       {files.length > 0 && (
-        <div className="rounded-[--radius-eture] border border-[--color-line] p-6">
+        <div className="rounded-eture border border-line p-6">
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
             <span className="font-medium">{files.length} archivos</span>
-            <span className="text-[--color-muted]">{counts.done ?? 0} nuevas</span>
-            <span className="text-[--color-muted]">
+            <span className="text-muted">{counts.done ?? 0} nuevas</span>
+            <span className="text-muted">
               {counts.duplicate ?? 0} ya estaban
             </span>
             {counts.error ? (
-              <span className="text-[--color-brand]">{counts.error} con error</span>
+              <span className="text-brand">{counts.error} con error</span>
             ) : null}
           </div>
 
           <ul className="mt-4 max-h-72 space-y-1 overflow-y-auto text-sm">
             {files.map((f, i) => (
               <li key={`${f.name}-${i}`} className="flex justify-between gap-4">
-                <span className="truncate text-[--color-muted]">{f.name}</span>
+                <span className="truncate text-muted">{f.name}</span>
                 <span
                   className={
-                    f.status === "error" ? "text-[--color-brand]" : "text-[--color-muted]"
+                    f.status === "error" ? "text-brand" : "text-muted"
                   }
                 >
                   {f.status === "done"
