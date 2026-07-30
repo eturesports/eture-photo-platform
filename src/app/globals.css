@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/*
+ * The same visual language as eturesports.com: white canvas, one structural
+ * grey, near-black text, the brand red used only on things you can act on,
+ * and a single 30px radius that the browser clamps to a pill on small
+ * controls.
+ */
+@theme {
+  --color-canvas: #ffffff;
+  --color-surface: #f5f5f7;
+  --color-ink: #1a1a1c;
+  --color-muted: #6b6b70;
+  --color-line: #e3e3e6;
+  --color-brand: #9f1b20;
+  --color-brand-ink: #7d1519;
+
+  --radius-eture: 30px;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
