@@ -13,7 +13,7 @@ import { requireApiRole } from "@/lib/access";
 const Body = z.object({ photoIds: z.array(z.string().uuid()).min(1).max(500) });
 
 export async function POST(request: Request) {
-  const denied = await requireApiRole("team", "photographer");
+  const denied = await requireApiRole("admin", "media");
   if (denied) return denied;
 
   const parsed = Body.safeParse(await request.json());

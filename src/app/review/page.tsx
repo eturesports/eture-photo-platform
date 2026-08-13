@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const BATCH = 40;
 
 export default async function ReviewPage() {
-  const viewer = await requireRole("team");
+  const viewer = await requireRole("admin", "media");
 
   const queued = await db
     .select({

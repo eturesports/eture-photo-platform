@@ -28,7 +28,7 @@ const MAX_REFERENCE_FACES = 20;
  */
 export async function confirmAppearance(appearanceId: string, personId: string, reviewer: string) {
   // Server actions are public endpoints. Every one of them checks.
-  await requireRole("team");
+  await requireRole("admin", "media");
 
   const [row] = await db
     .select()
@@ -55,7 +55,7 @@ export async function confirmAppearance(appearanceId: string, personId: string, 
 }
 
 export async function rejectAppearance(appearanceId: string, reviewer: string) {
-  await requireRole("team");
+  await requireRole("admin", "media");
 
   await db
     .update(appearance)
@@ -73,7 +73,7 @@ export async function rejectAppearance(appearanceId: string, reviewer: string) {
  * This is most of why a reviewer can clear 400-600 faces an hour instead of 60.
  */
 export async function confirmBurst(appearanceId: string, personId: string, reviewer: string) {
-  await requireRole("team");
+  await requireRole("admin", "media");
 
   const [row] = await db
     .select({ photoId: appearance.photoId })

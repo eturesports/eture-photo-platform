@@ -26,7 +26,7 @@ const Body = z.object({
 
 export async function POST(request: Request) {
   // An API route is not protected by whatever guards the page that calls it.
-  const denied = await requireApiRole("team", "photographer");
+  const denied = await requireApiRole("admin", "media");
   if (denied) return denied;
 
   const parsed = Body.safeParse(await request.json());

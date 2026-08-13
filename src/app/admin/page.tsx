@@ -1,6 +1,6 @@
 import { asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { appUser, guardianOf, person, squad, squadMember } from "@/db/schema";
+import { appUser, personAccess, person, squad, squadMember } from "@/db/schema";
 import { PageHeader } from "@/components/ui";
 import { AdminForms } from "./AdminForms";
 import { Users } from "./Users";
@@ -9,7 +9,7 @@ import { requireRole } from "@/lib/access";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  await requireRole("team");
+  await requireRole("admin");
 
   const squads = await db
     .select({
@@ -36,8 +36,8 @@ export default async function AdminPage() {
       linkedTo: person.fullName,
     })
     .from(appUser)
-    .leftJoin(guardianOf, eq(guardianOf.userId, appUser.id))
-    .leftJoin(person, eq(person.id, guardianOf.personId))
+    .leftJoin(personAccess, eq(personAccess.userId, appUser.id))
+    .leftJoin(person, eq(person.id, personAccess.personId))
     .orderBy(asc(appUser.email));
 
   const users = userRows.map((u) => ({

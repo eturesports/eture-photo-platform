@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
-import { appUser, guardianOf, person } from "@/db/schema";
+import { appUser, personAccess, person } from "@/db/schema";
 import { requireRole } from "@/lib/access";
 
 /**
@@ -17,12 +17,12 @@ import { requireRole } from "@/lib/access";
 const InviteInput = z.object({
   email: z.string().email().max(200),
   name: z.string().max(120).optional(),
-  role: z.enum(["team", "photographer", "family"]),
+  role: z.enum(["admin", "media", "player", "family"]),
   personSlug: z.string().max(200).optional(),
 });
 
 export async function inviteUser(formData: FormData) {
-  await requireRole("team");
+  await requireRole("admin");
 
   const parsed = InviteInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "datos incompletos" };
@@ -36,12 +36,19 @@ export async function inviteUser(formData: FormData) {
     .limit(1);
   if (existing) return { ok: false, error: "esa dirección ya tiene cuenta" };
 
-  // A family account with nobody attached can see nothing, which is a
-  // confusing thing to hand someone. Insist on the link at creation.
+  // An account that can see nobody is a confusing thing to hand someone, so
+  // both player and family accounts must name who they are for at creation —
+  // a player their own record, a family their child's.
   let personId: string | null = null;
-  if (parsed.data.role === "family") {
+  if (parsed.data.role === "family" || parsed.data.role === "player") {
     if (!parsed.data.personSlug) {
-      return { ok: false, error: "una cuenta de familia necesita un jugador vinculado" };
+      return {
+        ok: false,
+        error:
+          parsed.data.role === "player"
+            ? "una cuenta de jugador necesita su propia ficha vinculada"
+            : "una cuenta de familia necesita un jugador vinculado",
+      };
     }
     const [found] = await db
       .select({ id: person.id })
@@ -58,7 +65,7 @@ export async function inviteUser(formData: FormData) {
     .returning({ id: appUser.id });
 
   if (personId) {
-    await db.insert(guardianOf).values({ userId: created.id, personId });
+    await db.insert(personAccess).values({ userId: created.id, personId });
   }
 
   revalidatePath("/admin");
@@ -76,7 +83,7 @@ export async function inviteUser(formData: FormData) {
  * stored in the database, so this takes effect on the next request.
  */
 export async function setUserDisabled(formData: FormData) {
-  await requireRole("team");
+  await requireRole("admin");
 
   const userId = String(formData.get("userId") ?? "");
   const disabled = String(formData.get("disabled") ?? "") === "true";
@@ -92,7 +99,7 @@ export async function setUserDisabled(formData: FormData) {
 }
 
 export async function linkGuardian(formData: FormData) {
-  await requireRole("team");
+  await requireRole("admin");
 
   const userId = String(formData.get("userId") ?? "");
   const personSlug = String(formData.get("personSlug") ?? "");
@@ -106,13 +113,13 @@ export async function linkGuardian(formData: FormData) {
   if (!found) return { ok: false, error: "no existe ese jugador" };
 
   const [already] = await db
-    .select({ personId: guardianOf.personId })
-    .from(guardianOf)
-    .where(and(eq(guardianOf.userId, userId), eq(guardianOf.personId, found.id)))
+    .select({ personId: personAccess.personId })
+    .from(personAccess)
+    .where(and(eq(personAccess.userId, userId), eq(personAccess.personId, found.id)))
     .limit(1);
   if (already) return { ok: true };
 
-  await db.insert(guardianOf).values({ userId, personId: found.id });
+  await db.insert(personAccess).values({ userId, personId: found.id });
   revalidatePath("/admin");
   return { ok: true };
 }

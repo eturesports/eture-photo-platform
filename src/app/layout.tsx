@@ -12,12 +12,13 @@ export const metadata: Metadata = {
 
 /** The nav is filtered by role, so nobody is shown a door that will not open. */
 const nav = [
-  { href: "/", label: "Panel", roles: ["team", "photographer", "family"] },
-  { href: "/upload", label: "Subir", roles: ["team", "photographer"] },
-  { href: "/review", label: "Revisión", roles: ["team"] },
-  { href: "/sessions", label: "Sesiones", roles: ["team"] },
-  { href: "/people", label: "Personas", roles: ["team"] },
-  { href: "/admin", label: "Administración", roles: ["team"] },
+  { href: "/", label: "Panel", roles: ["admin", "media", "player", "family"] },
+  { href: "/upload", label: "Subir", roles: ["admin", "media"] },
+  { href: "/review", label: "Revisión", roles: ["admin", "media"] },
+  { href: "/enrolment", label: "Retratos", roles: ["admin", "media"] },
+  { href: "/sessions", label: "Sesiones", roles: ["admin", "media"] },
+  { href: "/people", label: "Personas", roles: ["admin", "media"] },
+  { href: "/admin", label: "Administración", roles: ["admin"] },
 ];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

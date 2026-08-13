@@ -9,7 +9,7 @@ import { requireRole } from "@/lib/access";
 export const dynamic = "force-dynamic";
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireRole("team");
+  await requireRole("admin", "media");
   const { id } = await params;
 
   const [found] = await db

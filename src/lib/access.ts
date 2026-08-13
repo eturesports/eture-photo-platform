@@ -10,7 +10,7 @@ import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { auth, type Role } from "@/auth";
 import { db } from "@/db";
-import { accessLog, guardianOf } from "@/db/schema";
+import { accessLog, personAccess } from "@/db/schema";
 
 export type Viewer = { id: string; email: string; role: Role };
 
@@ -56,31 +56,30 @@ export async function requireApiRole(...allowed: Role[]): Promise<Response | nul
 /**
  * May this viewer see this person's gallery?
  *
- * Team members may. Families may see only the people they are linked to.
- * Photographers may not see anyone's gallery — they upload, and that is all;
- * handing a freelance a browsable archive of children is not something to do
- * by omission.
+ * Admins and the media department may — the media department is internal
+ * staff who have to see galleries to file and check them. Everyone else is
+ * limited to the people explicitly linked to their account: a family to their
+ * children, a player to themselves.
  */
 export async function canViewPerson(viewer: Viewer, personId: string): Promise<boolean> {
-  if (viewer.role === "team") return true;
-  if (viewer.role === "photographer") return false;
+  if (viewer.role === "admin" || viewer.role === "media") return true;
 
   const [link] = await db
-    .select({ personId: guardianOf.personId })
-    .from(guardianOf)
-    .where(and(eq(guardianOf.userId, viewer.id), eq(guardianOf.personId, personId)))
+    .select({ personId: personAccess.personId })
+    .from(personAccess)
+    .where(and(eq(personAccess.userId, viewer.id), eq(personAccess.personId, personId)))
     .limit(1);
 
   return Boolean(link);
 }
 
-/** The people a family account may see; empty for anyone else. */
+/** The people a player or family account may see; empty for staff. */
 export async function visiblePersonIds(viewer: Viewer): Promise<string[]> {
-  if (viewer.role !== "family") return [];
+  if (viewer.role !== "family" && viewer.role !== "player") return [];
   const rows = await db
-    .select({ personId: guardianOf.personId })
-    .from(guardianOf)
-    .where(eq(guardianOf.userId, viewer.id));
+    .select({ personId: personAccess.personId })
+    .from(personAccess)
+    .where(eq(personAccess.userId, viewer.id));
   return rows.map((r) => r.personId);
 }
 

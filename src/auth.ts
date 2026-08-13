@@ -19,7 +19,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { account, appUser, authSession, verificationToken } from "@/db/schema";
 
-export type Role = "team" | "photographer" | "family";
+export type Role = "admin" | "media" | "player" | "family";
 
 declare module "next-auth" {
   interface Session {

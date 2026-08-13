@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SessionsPage() {
   // A whole session is other people's children; team only.
-  await requireRole("team");
+  await requireRole("admin", "media");
 
   const rows = await db
     .select({

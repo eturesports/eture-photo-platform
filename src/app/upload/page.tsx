@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function UploadPage() {
   // Photographers upload; that is the whole of their access.
-  await requireRole("team", "photographer");
+  await requireRole("admin", "media");
 
   const rows = await db
     .selectDistinct({ photographer: photo.photographer })

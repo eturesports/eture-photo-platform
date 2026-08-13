@@ -247,9 +247,11 @@ export const faceRef = pgTable(
 // ---------------------------------------------------------------------------
 
 /**
- * 'team'         — everything, including review and admin
- * 'photographer' — uploads only; never sees anyone else's galleries
- * 'family'       — only the people linked to them in `guardianOf`
+ * 'admin'  — everything, including accounts and consent
+ * 'media'  — the media department, through which photographers work: upload,
+ *            review and enrolment. Not accounts, not consent.
+ * 'player' — their own gallery, nothing else
+ * 'family' — only the people linked to them in `personAccess`
  */
 export const appUser = pgTable("app_user", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -262,9 +264,16 @@ export const appUser = pgTable("app_user", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Which people a family account may see. A parent can have two children here. */
-export const guardianOf = pgTable(
-  "guardian_of",
+/**
+ * Which people an account may see.
+ *
+ * A family has a row per child; a player has exactly one, pointing at
+ * themselves. One table for both because the question being answered is the
+ * same — "may this account see this person" — and two tables answering it
+ * would eventually disagree.
+ */
+export const personAccess = pgTable(
+  "person_access",
   {
     userId: uuid("user_id")
       .notNull()

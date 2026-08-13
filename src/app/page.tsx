@@ -1,24 +1,24 @@
 import { count, eq, inArray, sql } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { appearance, person, photo, session } from "@/db/schema";
 import { Card, Empty, PageHeader, Stat } from "@/components/ui";
-import { requireViewer, visiblePersonIds } from "@/lib/access";
+import { requireViewer, visiblePersonIds, type Viewer } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const viewer = await requireViewer();
 
-  if (viewer.role === "family") return <FamilyHome userId={viewer.id} />;
-  // Photographers get one job and one screen.
-  if (viewer.role === "photographer") redirect("/upload");
-  return <TeamDashboard />;
+  // Players and families both land on the people they are allowed to see —
+  // themselves, or their children — never on a list of everyone else's.
+  if (viewer.role === "player" || viewer.role === "family") {
+    return <OwnPhotos viewer={viewer} />;
+  }
+  return <StaffDashboard />;
 }
 
-/** Families land on their own children, never on a list of everyone else's. */
-async function FamilyHome({ userId }: { userId: string }) {
-  const ids = await visiblePersonIds({ id: userId, email: "", role: "family" });
+async function OwnPhotos({ viewer }: { viewer: Viewer }) {
+  const ids = await visiblePersonIds(viewer);
 
   if (ids.length === 0) {
     return (
@@ -63,7 +63,7 @@ async function FamilyHome({ userId }: { userId: string }) {
   );
 }
 
-async function TeamDashboard() {
+async function StaffDashboard() {
   const [[photos], [people], [sessions], [unassigned], [failed], [queued]] = await Promise.all([
     db.select({ n: count() }).from(photo),
     db.select({ n: count() }).from(person),

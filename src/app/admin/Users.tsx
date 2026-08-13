@@ -17,8 +17,9 @@ const field =
 const label = "block text-sm font-medium";
 
 const roleLabel: Record<string, string> = {
-  team: "Equipo",
-  photographer: "Fotógrafo",
+  admin: "Administrador",
+  media: "Media",
+  player: "Jugador",
   family: "Familia",
 };
 
@@ -93,14 +94,15 @@ export function Users({ users }: { users: User[] }) {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="family">Familia — sólo su jugador</option>
-            <option value="photographer">Fotógrafo — sólo subir</option>
-            <option value="team">Equipo — acceso completo</option>
+            <option value="family">Familia — sólo sus hijos</option>
+            <option value="player">Jugador — sólo sus propias fotos</option>
+            <option value="media">Media — subir, revisar y retratos</option>
+            <option value="admin">Administrador — acceso completo</option>
           </select>
         </label>
-        {role === "family" && (
+        {(role === "family" || role === "player") && (
           <label className={label}>
-            Jugador vinculado
+            {role === "player" ? "Su propia ficha" : "Jugador vinculado"}
             <input
               name="personSlug"
               placeholder="marco-ruiz"
@@ -108,7 +110,8 @@ export function Users({ users }: { users: User[] }) {
               required
             />
             <span className="mt-1 block text-xs font-normal text-muted">
-              El identificador que aparece en la dirección de su perfil.
+              El identificador que aparece en la dirección de su perfil, por ejemplo
+              marco-ruiz en /person/marco-ruiz.
             </span>
           </label>
         )}

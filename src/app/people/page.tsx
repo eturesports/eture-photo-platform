@@ -7,7 +7,7 @@ import { requireRole } from "@/lib/access";
 export const dynamic = "force-dynamic";
 
 export default async function PeoplePage() {
-  await requireRole("team");
+  await requireRole("admin", "media");
 
   const rows = await db
     .select({

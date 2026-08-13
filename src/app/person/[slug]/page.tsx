@@ -51,7 +51,7 @@ export default async function PersonPage({
     <>
       <PageHeader title={found.fullName} />
 
-      {viewer.role === "team" && (
+      {(viewer.role === "admin" || viewer.role === "media") && (
         <div className="mb-8 flex items-center gap-3">
           <RoleBadge role={found.role} />
           <span className="text-sm text-muted">
@@ -64,7 +64,7 @@ export default async function PersonPage({
 
       {withUrls.length === 0 ? (
         <Empty>
-          {viewer.role === "family"
+          {viewer.role === "family" || viewer.role === "player"
             ? "Todavía no hay fotos suyas en el archivo."
             : "Aún no hay fotos asignadas. Se asignan desde la cola de revisión o desde cada sesión."}
         </Empty>

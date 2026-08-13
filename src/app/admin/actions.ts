@@ -17,7 +17,7 @@ const SquadInput = z.object({
 });
 
 export async function createSquad(formData: FormData) {
-  await requireRole("team");
+  await requireRole("admin");
 
   const parsed = SquadInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "datos incompletos" };
@@ -39,7 +39,7 @@ const SessionInput = z.object({
 });
 
 export async function createSession(formData: FormData) {
-  await requireRole("team");
+  await requireRole("admin");
 
   const parsed = SessionInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { ok: false, error: "datos incompletos" };
@@ -79,7 +79,7 @@ type ImportOutcome =
     };
 
 export async function importRoster(formData: FormData): Promise<ImportOutcome> {
-  await requireRole("team");
+  await requireRole("admin");
 
   const file = formData.get("csv");
   const squadId = (formData.get("squadId") as string) || null;
