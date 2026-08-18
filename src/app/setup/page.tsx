@@ -81,7 +81,7 @@ export default function SetupPage() {
         </p>
         <pre className="mt-3 overflow-x-auto rounded-eture bg-white p-4 text-xs">
 {`insert into app_user (email, name, role)
-values ('tu@eturesports.com', 'Tu nombre', 'team');`}
+values ('tu@eturesports.com', 'Tu nombre', 'admin');`}
         </pre>
       </div>
     </div>
