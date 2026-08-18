@@ -21,6 +21,16 @@ type FileState = {
   error?: string;
 };
 
+type Summary = {
+  total: number;
+  processed: number;
+  failed: number;
+  unassigned: number;
+  stillWorking: number;
+  sessions: { label: string; n: number }[];
+  identified: { people: number; confirmed: number; queued: number; names: string[] };
+};
+
 const CONCURRENCY = 3;
 
 async function sha256Hex(file: File): Promise<string> {
@@ -34,6 +44,8 @@ export function Uploader({ photographers }: { photographers: string[] }) {
   const [photographer, setPhotographer] = useState(photographers[0] ?? "");
   const [files, setFiles] = useState<FileState[]>([]);
   const [running, setRunning] = useState(false);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [waiting, setWaiting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const update = useCallback((index: number, patch: Partial<FileState>) => {
@@ -105,6 +117,26 @@ export function Uploader({ photographers }: { photographers: string[] }) {
         });
       }
       setRunning(false);
+
+      // Then report back what became of it. Analysis is asynchronous, so this
+      // polls until the batch settles rather than showing a half-done answer
+      // once and leaving it stale.
+      if (uploaded.length > 0) {
+        setWaiting(true);
+        for (let attempt = 0; attempt < 40; attempt++) {
+          const res = await fetch("/api/uploads/summary", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ photoIds: uploaded }),
+          });
+          if (!res.ok) break;
+          const data: Summary = await res.json();
+          setSummary(data);
+          if (data.stillWorking === 0) break;
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+        setWaiting(false);
+      }
     },
     [photographer, update],
   );
@@ -170,6 +202,51 @@ export function Uploader({ photographers }: { photographers: string[] }) {
               <span className="text-brand">{counts.error} con error</span>
             ) : null}
           </div>
+
+          {summary && (
+            <div className="mt-5 border-t border-line pt-5 text-sm">
+              <p className="font-medium">
+                {waiting
+                  ? `Procesando… ${summary.processed} de ${summary.total}`
+                  : "Listo"}
+              </p>
+
+              {summary.sessions.length > 0 && (
+                <ul className="mt-2 space-y-0.5 text-muted">
+                  {summary.sessions.map((s) => (
+                    <li key={s.label}>
+                      {s.n} fotos → {s.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {summary.unassigned > 0 && (
+                <p className="mt-2 text-muted">
+                  {summary.unassigned} sin sesión. Suele ser la hora de la cámara: se
+                  corrige de una vez desde Sesiones.
+                </p>
+              )}
+
+              {summary.identified.people > 0 && (
+                <p className="mt-2 text-muted">
+                  {summary.identified.people}{" "}
+                  {summary.identified.people === 1 ? "persona" : "personas"} identificadas
+                  {summary.identified.names.length > 0 &&
+                    `: ${summary.identified.names.slice(0, 8).join(", ")}`}
+                  {summary.identified.names.length > 8 && "…"}
+                  {summary.identified.queued > 0 &&
+                    ` · ${summary.identified.queued} caras para revisar`}
+                </p>
+              )}
+
+              {summary.failed > 0 && (
+                <p className="mt-2 text-brand">
+                  {summary.failed} no se han podido procesar.
+                </p>
+              )}
+            </div>
+          )}
 
           <ul className="mt-4 max-h-72 space-y-1 overflow-y-auto text-sm">
             {files.map((f, i) => (
