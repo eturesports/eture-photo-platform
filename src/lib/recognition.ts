@@ -13,6 +13,7 @@
  */
 
 import {
+  DeleteFacesCommand,
   DetectFacesCommand,
   DetectTextCommand,
   IndexFacesCommand,
@@ -147,4 +148,33 @@ export async function readShirtNumber(torso: Buffer): Promise<NumberRead | null>
     if (!best || confidence > best.confidence) best = { value, confidence };
   }
   return best;
+}
+
+/**
+ * Removes faces from the collection.
+ *
+ * This is what makes a revocation real. Deleting our own `face_ref` rows while
+ * leaving the vectors in Rekognition would keep the person recognisable — the
+ * archive would go on identifying someone who withdrew consent, which is the
+ * precise thing they withdrew it to stop.
+ *
+ * Returns the ids AWS confirms it deleted, so the caller can tell whether the
+ * database and the collection actually agree.
+ */
+export async function deleteFaces(faceIds: string[]): Promise<string[]> {
+  if (faceIds.length === 0) return [];
+
+  const deleted: string[] = [];
+  // The API caps a request at 4096 ids; nobody here will approach that, but a
+  // silent truncation would be the worst possible failure for this operation.
+  for (let i = 0; i < faceIds.length; i += 1000) {
+    const res = await client().send(
+      new DeleteFacesCommand({
+        CollectionId: env.REKOGNITION_COLLECTION_ID!,
+        FaceIds: faceIds.slice(i, i + 1000),
+      }),
+    );
+    deleted.push(...(res.DeletedFaces ?? []));
+  }
+  return deleted;
 }

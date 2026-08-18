@@ -18,6 +18,7 @@ const nav = [
   { href: "/enrolment", label: "Retratos", roles: ["admin", "media"] },
   { href: "/sessions", label: "Sesiones", roles: ["admin", "media"] },
   { href: "/people", label: "Personas", roles: ["admin", "media"] },
+  { href: "/consent", label: "Consentimientos", roles: ["admin"] },
   { href: "/admin", label: "Administración", roles: ["admin"] },
 ];
 
