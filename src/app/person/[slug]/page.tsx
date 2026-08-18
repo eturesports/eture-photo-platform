@@ -62,6 +62,15 @@ export default async function PersonPage({
         </div>
       )}
 
+      {withUrls.length > 0 && (
+        <a
+          href={`/api/gallery/${found.slug}`}
+          className="mb-6 inline-block rounded-eture bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-ink"
+        >
+          Descargar las {withUrls.length} fotos
+        </a>
+      )}
+
       {withUrls.length === 0 ? (
         <Empty>
           {viewer.role === "family" || viewer.role === "player"

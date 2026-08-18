@@ -8,8 +8,9 @@ jugadores y entrenadores que aparecen en ella.
 - **Infraestructura** — Vercel · Neon (Fráncfort) · Cloudflare R2 · Inngest · AWS Rekognition (Irlanda)
 - **Sin servidores** que administrar: todo son servicios gestionados
 
-Acceso **sólo por invitación**, con enlace mágico por correo. Tres niveles:
-equipo, fotógrafo (sube, no ve galerías) y familia (sólo sus hijos).
+Acceso **sólo por invitación**, con enlace mágico por correo. Cuatro tipos de
+cuenta: administrador, media (por donde acceden los fotógrafos), jugador y
+familia.
 
 ---
 
@@ -28,7 +29,7 @@ npm test                       # lógica de decisión y zonas horarias
 
 ```sql
 insert into app_user (email, name, role)
-values ('tu@eturesports.com', 'Tu nombre', 'team');
+values ('tu@eturesports.com', 'Tu nombre', 'admin');
 ```
 
 Desde ahí, el resto se crean en Administración.
@@ -96,8 +97,9 @@ quien la pida.
 
 | Rol | Ve |
 | --- | --- |
-| `team` | Todo: subida, revisión, sesiones, personas, administración |
-| `photographer` | Sólo la pantalla de subida. Nunca galerías ajenas |
+| `admin` | Todo, incluidas cuentas y consentimientos |
+| `media` | El departamento por el que acceden los fotógrafos: subir, revisar, retratos, sesiones y personas. No cuentas ni consentimientos |
+| `player` | Sólo sus propias fotos |
 | `family` | Sólo los jugadores vinculados a su cuenta |
 
 Las sesiones se guardan en base de datos, no en un token firmado, para que
@@ -161,7 +163,14 @@ src/
 └── app/                  Interfaz y rutas de API
 ```
 
-### Una trampa que ya está resuelta
+### Dos trampas que ya están resueltas
+
+**El reloj de la cámara.** Si va mal puesta o en otra zona horaria, desplaza la
+tarjeta entera y las fotos no encuentran su sesión. `/sessions` muestra las que
+quedaron sueltas y aplica un desfase a todo el lote, recalculando las sesiones
+con la misma lógica que usó la ingesta.
+
+### La zona horaria del EXIF
 
 EXIF guarda la hora **sin zona horaria**: "18:04:11" es lo que marcaba el reloj
 de la cámara. Los lectores devuelven eso como si fuera UTC, lo que en España son
@@ -191,14 +200,11 @@ Por orden de urgencia:
 1. **Calibrar los umbrales** de `lib/matching.ts` contra unas 300 fotos
    etiquetadas a mano antes de abrir el archivo a las familias. Los valores
    actuales son un punto de partida razonado, no medido.
-2. **Alta con retratos**: la pantalla para fotografiar a cada persona el día de
-   la acreditación. Veinte minutos por temporada y es lo que hace que el
-   reconocimiento funcione desde el primer día.
-3. **Descarga de galería en ZIP** para las familias.
-4. **Corrección de lote** cuando la cámara tenía el reloj mal puesto: aplicar un
-   desfase a toda una subida en vez de foto a foto.
-5. **Gestión de consentimientos** desde la interfaz, incluida la revocación con
-   borrado de vectores.
+2. **Aviso al fotógrafo al terminar un lote**: cuántas entraron, a cuánta gente
+   se identificó, cuántas quedaron sin asignar. Es la parte más barata del
+   sistema y la que más sostiene el hábito de subir cada semana.
+3. **Subida reanudable de un archivo suelto** (multipart). Hoy la reanudación
+   es por lote, vía el hash: volver a soltar la carpeta salta lo ya subido.
 
 Nota menor: `importPeople` captura los errores por fila, así que una caída de
 la base de datos se reporta como muchas filas rechazadas en vez de como un

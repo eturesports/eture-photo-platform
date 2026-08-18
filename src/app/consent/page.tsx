@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { consent, faceRef, person } from "@/db/schema";
 import { Empty, PageHeader } from "@/components/ui";
@@ -24,6 +24,15 @@ export default async function ConsentPage() {
       slug: person.slug,
       role: person.role,
       birthDate: person.birthDate,
+      // Computed by Postgres rather than in the render: the database knows
+      // today's date, and reading the clock while rendering is exactly the
+      // kind of impurity that makes a component's output depend on when it
+      // happened to run.
+      minor: sql<boolean | null>`
+        case when ${person.birthDate} is null then null
+             else ${person.birthDate} > current_date - interval '18 years'
+        end
+      `,
     })
     .from(person)
     .orderBy(asc(person.fullName));
@@ -40,20 +49,12 @@ export default async function ConsentPage() {
       return "granted" as const;
     };
 
-    // Age at today's date, used only to show whether a guardian must sign.
-    let minor: boolean | null = null;
-    if (p.birthDate) {
-      const born = new Date(p.birthDate);
-      const age = (Date.now() - born.valueOf()) / (365.25 * 24 * 3600 * 1000);
-      minor = age < 18;
-    }
-
     return {
       personId: p.id,
       fullName: p.fullName,
       slug: p.slug,
       personRole: p.role,
-      minor,
+      minor: p.minor,
       biometric: state("biometric"),
       gallery: state("gallery"),
       marketing: state("marketing"),

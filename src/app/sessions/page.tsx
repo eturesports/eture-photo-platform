@@ -1,8 +1,9 @@
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { photo, session, squad } from "@/db/schema";
 import { Card, Empty, PageHeader, kindLabel } from "@/components/ui";
 import { requireRole } from "@/lib/access";
+import { FixTimes, type Unassigned } from "./FixTimes";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +27,28 @@ export default async function SessionsPage() {
     .orderBy(desc(session.heldOn))
     .limit(100);
 
+  // Photos that matched no session are surfaced here rather than in a list
+  // nobody visits: the cause is nearly always a camera clock, and the fix for
+  // that lives on this screen.
+  const unassigned: Unassigned[] = await db
+    .select({
+      photographer: photo.photographer,
+      n: sql<number>`count(*)::int`,
+      earliest: sql<string | null>`min(${photo.shotAt})`,
+      latest: sql<string | null>`max(${photo.shotAt})`,
+    })
+    .from(photo)
+    .where(isNull(photo.sessionId))
+    .groupBy(photo.photographer);
+
   return (
     <>
       <PageHeader
         title="Sesiones"
         lead="Cada entrenamiento y cada partido. Los partidos se marcan con equipación numerada para que la lectura de dorsales se active sólo ahí."
       />
+
+      <FixTimes unassigned={unassigned} />
 
       {rows.length === 0 ? (
         <Empty>
