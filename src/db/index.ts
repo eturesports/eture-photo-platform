@@ -19,11 +19,38 @@ import * as schema from "./schema";
  * import this module, and opening a socket at import time would make the build
  * depend on production credentials.
  */
+/**
+ * Parameters that belong to libpq's connection string but are not Postgres
+ * server settings.
+ *
+ * postgres.js forwards anything it does not recognise to the server as a
+ * startup parameter, and the server rejects what it has never heard of. Neon
+ * hands out `channel_binding=require` by default, so pasting their connection
+ * string unedited produces "unrecognized configuration parameter" — an error
+ * that says nothing about the real cause. Dropping these is safe: TLS is still
+ * enforced by `sslmode`, which postgres.js does understand.
+ */
+const LIBPQ_ONLY_PARAMS = ["channel_binding", "target_session_attrs", "gssencmode"];
+
+function sanitise(url: string): string {
+  try {
+    const parsed = new URL(url);
+    for (const key of LIBPQ_ONLY_PARAMS) parsed.searchParams.delete(key);
+    return parsed.toString();
+  } catch {
+    // Not a URL we can parse — hand it through untouched and let the driver
+    // produce its own error rather than inventing one.
+    return url;
+  }
+}
+
 let cached: PostgresJsDatabase<typeof schema> | null = null;
 
 function connect(): PostgresJsDatabase<typeof schema> {
   if (!cached) {
-    cached = drizzle(postgres(env.DATABASE_URL, { max: 1, prepare: false }), { schema });
+    cached = drizzle(postgres(sanitise(env.DATABASE_URL), { max: 1, prepare: false }), {
+      schema,
+    });
   }
   return cached;
 }

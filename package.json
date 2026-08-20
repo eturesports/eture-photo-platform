@@ -11,7 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "test": "tsx tests/matching.test.mts && node tests/time.test.mjs",
+    "test": "tsx tests/matching.test.mts && node tests/time.test.mjs && node tests/connection-string.test.mjs",
     "dev:s3": "node tools/local-s3.mjs"
   },
   "dependencies": {
